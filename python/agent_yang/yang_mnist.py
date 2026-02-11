@@ -10,25 +10,25 @@ from nn.batch import Batch
 from tools import Tools
 
 
-def get_training_data_set(data_root:str, bound:list):
+def get_training_data_set(data_root: str, bound: list):
     """
     Get the train data set.
     """
-    image_loader = ImageLoader(data_root+'/train-images-idx3-ubyte', 60000)
-    label_loader = LabelLoader(data_root+'/train-labels-idx1-ubyte', 60000)
+    image_loader = ImageLoader(data_root + '/train-images-idx3-ubyte', 60000)
+    label_loader = LabelLoader(data_root + '/train-labels-idx1-ubyte', 60000)
     return image_loader.load(), label_loader.load(bound)
 
 
-def get_test_data_set(data_root:str, bound:list):
+def get_test_data_set(data_root: str, bound: list):
     """
     Get the test data set.
     """
-    image_loader = ImageLoader(data_root+'/t10k-images-idx3-ubyte', 10000)
-    label_loader = LabelLoader(data_root+'/t10k-labels-idx1-ubyte', 10000)
+    image_loader = ImageLoader(data_root + '/t10k-images-idx3-ubyte', 10000)
+    label_loader = LabelLoader(data_root + '/t10k-labels-idx1-ubyte', 10000)
     return image_loader.load(), label_loader.load(bound)
 
 
-def transpose(args, use_bp):
+def transpose(args, use_bp: bool):
     if use_bp:
         args0 = [np.array(line).flatten() for line in args[0]]
     else:
@@ -37,8 +37,8 @@ def transpose(args, use_bp):
     return np.array(args0), np.array(args1)
 
 
-def train_and_evaluate(data_root:str, use_bp):
-    batch_size = 10
+def train_and_evaluate(data_root: str, use_bp: bool):
+    batch_size = 32
     out_act = Sigmoid
     if out_act == ArcTan:
         r = 1  # high
@@ -51,7 +51,7 @@ def train_and_evaluate(data_root:str, use_bp):
     test_data = Tools.normalization(test_data)
     if use_bp:
         BPNet.set_loss_type('default')
-        network = BPNet([784, 256, 128, 10], [out_act, Relu, Relu, out_act], 0.1, 0.1, [[1], [1], [1], [1]])
+        network = BPNet([784, 256, 128, 10], [out_act, Relu, Sigmoid, out_act], 0.1, 0.1, [[1], [1], [1], [1]])
     else:
         network = YangNet(0, 0.01, 10)
     best = 0
