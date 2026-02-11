@@ -2,6 +2,7 @@
 import numpy as np
 from image_loader import ImageLoader
 from label_loader import LabelLoader
+from download_mnist import DownloadMnist
 from nn.activators import Sigmoid, Relu, ArcTan
 from yang_net import YangNet
 from nn.bp_net import BPNet
@@ -9,21 +10,21 @@ from nn.batch import Batch
 from tools import Tools
 
 
-def get_training_data_set(bound):
+def get_training_data_set(data_root:str, bound:list):
     """
     Get the train data set.
     """
-    image_loader = ImageLoader('data/train-images.idx3-ubyte', 60000)
-    label_loader = LabelLoader('data/train-labels.idx1-ubyte', 60000)
+    image_loader = ImageLoader(data_root+'/train-images-idx3-ubyte', 60000)
+    label_loader = LabelLoader(data_root+'/train-labels-idx1-ubyte', 60000)
     return image_loader.load(), label_loader.load(bound)
 
 
-def get_test_data_set(bound):
+def get_test_data_set(data_root:str, bound:list):
     """
     Get the test data set.
     """
-    image_loader = ImageLoader('data/t10k-images.idx3-ubyte', 10000)
-    label_loader = LabelLoader('data/t10k-labels.idx1-ubyte', 10000)
+    image_loader = ImageLoader(data_root+'/t10k-images-idx3-ubyte', 10000)
+    label_loader = LabelLoader(data_root+'/t10k-labels-idx1-ubyte', 10000)
     return image_loader.load(), label_loader.load(bound)
 
 
@@ -36,7 +37,7 @@ def transpose(args, use_bp):
     return np.array(args0), np.array(args1)
 
 
-def train_and_evaluate(use_bp):
+def train_and_evaluate(data_root:str, use_bp):
     batch_size = 10
     out_act = Sigmoid
     if out_act == ArcTan:
@@ -44,8 +45,8 @@ def train_and_evaluate(use_bp):
         b = [-r, r]
     else:
         b = [0, 1]
-    train_data, train_labels = transpose(get_training_data_set(b), use_bp)
-    test_data, test_labels = transpose(get_test_data_set(b), use_bp)
+    train_data, train_labels = transpose(get_training_data_set(data_root, b), use_bp)
+    test_data, test_labels = transpose(get_test_data_set(data_root, b), use_bp)
     train_data = Tools.normalization(train_data)
     test_data = Tools.normalization(test_data)
     if use_bp:
@@ -76,4 +77,6 @@ def train_and_evaluate(use_bp):
 
 
 if __name__ == '__main__':
-    train_and_evaluate(True)
+    m_data_root = './data'
+    DownloadMnist.download_mnist(target_dir=m_data_root,force_redownload=False)
+    train_and_evaluate(m_data_root, True)
