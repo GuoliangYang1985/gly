@@ -7,7 +7,7 @@ from nn.batch import Batch
 def gradient_check(net, sample_feature, sample_label):
     """
     Check gradient of BP.
-    :param net: the net will be check.
+    :param net: Specify the network and verify whether it has been correctly implemented.
     :param sample_feature: The feature of sample.
     :param sample_label: The label of sample.
     :return:
@@ -59,6 +59,6 @@ def get_train_data_set():
 if __name__ == '__main__':
     m_labels, m_data_set = get_train_data_set()
     BPNet.set_loss_type('mse')
-    m_net = BPNet([8, 9, 8], [Identity, ArcTan, Sigmoid], 0.1, 0, [[1], [1, 2], [1, 3], [1, 2]])
+    m_net = BPNet([8, 9, 8], [Identity, ArcTan, Sigmoid], 0.1, 0, [[1], [1], [1], [1]])
     batch_input, batch_labels = Batch.next_batch(m_data_set, m_labels, 10)
     gradient_check(m_net, batch_input, batch_labels)

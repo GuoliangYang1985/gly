@@ -16,7 +16,7 @@ class Net(object):
         self.layers = []
 
     @staticmethod
-    def set_loss_type(loss_type):
+    def set_loss_type(loss_type:str):
         Net.loss_type = loss_type
 
     def predict(self, sample):
