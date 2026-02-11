@@ -78,5 +78,5 @@ def train_and_evaluate(data_root:str, use_bp):
 
 if __name__ == '__main__':
     m_data_root = './data'
-    DownloadMnist.download_mnist(target_dir=m_data_root,force_redownload=False)
+    DownloadMnist.download_mnist(target_dir=m_data_root)
     train_and_evaluate(m_data_root, True)
