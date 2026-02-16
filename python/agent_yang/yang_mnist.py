@@ -2,7 +2,6 @@
 import numpy as np
 from image_loader import ImageLoader
 from label_loader import LabelLoader
-from download_mnist import DownloadMnist
 from nn.activators import Sigmoid, Relu, ArcTan
 from yang_net import YangNet
 from nn.bp_net import BPNet
@@ -78,5 +77,4 @@ def train_and_evaluate(data_root: str, use_bp: bool):
 
 if __name__ == '__main__':
     m_data_root = './data'
-    DownloadMnist.download_mnist(target_dir=m_data_root)
     train_and_evaluate(m_data_root, True)
