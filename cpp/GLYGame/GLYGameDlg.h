@@ -13,7 +13,7 @@
 #include "ItemDefinition.h"
 #include "RenderGrid.h"
 #include "Astar.h"
-#import "./Dll/msxml4.dll"
+#import "msxml4.dll"
 using namespace MSXML2;
 #endif // _MSC_VER > 1000
 

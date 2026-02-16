@@ -7,7 +7,7 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#import "./Dll/msxml4.dll"
+#import "msxml4.dll"
 using namespace MSXML2;
 #endif // _MSC_VER > 1000
 
