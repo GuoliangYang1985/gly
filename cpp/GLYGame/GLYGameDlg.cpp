@@ -105,6 +105,7 @@ void CGLYGameDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CGLYGameDlg, CDialog)
 	//{{AFX_MSG_MAP(CGLYGameDlg)
 	ON_WM_SYSCOMMAND()
+	ON_WM_SIZE()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
@@ -157,6 +158,16 @@ void CGLYGameDlg::OnSysCommand(UINT nID, LPARAM lParam)
 	{
 		CDialog::OnSysCommand(nID, lParam);
 	}
+}
+
+void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+	// 如果窗口最小化，无需处理
+	if (nType == SIZE_MINIMIZED)
+		return;
+	//GamePaint();
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -232,11 +243,8 @@ void CGLYGameDlg::DrawSortedAll()
 void CGLYGameDlg::RenderAll()
 {
 	CRect rect;
-	// 获取客户端范围
-	GetClientRect(&rect);
-
-	// 获取源设备DC
-	CDC* hdc = GetDC();
+	GetClientRect(&rect);// 获取客户端范围
+	CDC* hdc = GetDC();// 获取源设备DC
 
 	int mapWidth = rect.Width();
 	int mapHeight = rect.Height();
@@ -247,11 +255,9 @@ void CGLYGameDlg::RenderAll()
 	mStartCol = (mapWidth - bWidth) / 2 - m_BackGround.m_offsetX;
 	mStartRow = (mapHeight - bHeight) / 2 - m_BackGround.m_offsetY;
 
-	// 创建兼容位图
-	CBitmap cMap;
+	CBitmap cMap;// 创建兼容位图
 	cMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
-	// 兼容DC选入赚容位图
-	m_bufferDC.SelectObject(&cMap);
+	m_bufferDC.SelectObject(&cMap);// 兼容DC选入赚容位图
 	cMap.DeleteObject();
 
 	Graphics graphics(m_bufferDC.GetSafeHdc());
@@ -260,20 +266,19 @@ void CGLYGameDlg::RenderAll()
 	{
 		m_bBackDone = true;
 
-		// 创建兼容位图
-		CBitmap backMap;
+		CBitmap backMap;// 创建兼容位图
 		backMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
-		// 兼容DC选入赚容位图
-		m_backDC.SelectObject(&backMap);
+		m_backDC.SelectObject(&backMap);// 兼容DC选入赚容位图
 		backMap.DeleteObject();
 
-		int x = int(mStartCol + m_BackGround.m_offsetX);
-		int y = int(mStartRow + m_BackGround.m_offsetY);
-		Graphics backgraphics(m_backDC.GetSafeHdc());
 
-		backgraphics.DrawImage(m_back, x, y, bWidth, bHeight);
-		backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
 	}
+
+	int x = mStartCol + m_BackGround.m_offsetX;
+	int y = mStartRow + m_BackGround.m_offsetY;
+	Graphics backgraphics(m_backDC.GetSafeHdc());
+	backgraphics.DrawImage(m_back, x, y, bWidth, bHeight);
+	backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
 
 	m_bufferDC.BitBlt(0, 0, mapWidth, mapHeight, &m_backDC, 0, 0, SRCCOPY);
 
@@ -283,8 +288,7 @@ void CGLYGameDlg::RenderAll()
 	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	if (m_Avatar.m_bWalking)
 	{
-		//指向要绘制的帧
-		++m_Avatar.m_nCurCol;
+		++m_Avatar.m_nCurCol;//指向要绘制的帧
 	}
 	if (m_Avatar.m_nCurCol >= COLS)
 	{
@@ -305,9 +309,8 @@ void CGLYGameDlg::RenderAll()
 					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel, NULL, NULL, NULL);
 			}
 		}
-		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol);
-		//Y轴方向偏移
-		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow);
+		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol);//X轴方向偏移
+		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow);//Y轴方向偏移
 
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, (Gdiplus::REAL)offsetX, (Gdiplus::REAL)offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
@@ -678,5 +681,3 @@ INode* CGLYGameDlg::GetNode(int col, int row)
 {
 	return GetTile(col, row);
 }
-
-
