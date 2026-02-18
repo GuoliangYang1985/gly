@@ -23,18 +23,18 @@ using namespace MSXML2;
 
 class CGLYGameDlg : public CDialog, public ISearchable
 {
-// Construction
+	// Construction
 public:
 	CGLYGameDlg(CWnd* pParent = NULL);	// standard constructor
 	virtual ~CGLYGameDlg();
-// Dialog Data
-	//{{AFX_DATA(CGLYGameDlg)
+	// Dialog Data
+		//{{AFX_DATA(CGLYGameDlg)
 	enum { IDD = IDD_GLYGAME_DIALOG };
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGLYGameDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
@@ -51,7 +51,7 @@ public:
 	//时间处理。
 	void OnTimer(int id);
 	//画指定alpha值的矩形。
-	void DrawAlphaRect(CDC *pDC,CRect& r,COLORREF clr,unsigned char alpha);
+	void DrawAlphaRect(CDC* pDC, CRect& r, COLORREF clr, unsigned char alpha);
 	//刷新游戏画面。
 	void GamePaint();
 	/**
@@ -97,9 +97,9 @@ public:
 	 * @param ty 屏幕的y轴坐标。
 	 * @return 得到对应的单元格。
 	 */
-	CTile *GetTileFromScreenCoordinate(float tx, float ty);
-	CTile *GetTile(int col, int row);
-	float GetNodeTransitionCost(INode *n1, INode *n2);
+	CTile* GetTileFromScreenCoordinate(float tx, float ty);
+	CTile* GetTile(int col, int row);
+	float GetNodeTransitionCost(INode* n1, INode* n2);
 	/**
 	 * 排序。
 	 */
@@ -107,21 +107,21 @@ public:
 
 	int GetCols();
 	int GetRows();
-	INode *GetNode(int col, int row);
+	INode* GetNode(int col, int row);
 public:
 	//角色。
-	CAvatar m_Avatar; 
+	CAvatar m_Avatar;
 	//背景。
-	CBackGround m_BackGround; 
+	CBackGround m_BackGround;
 	//是否初始化完成。
-	bool m_bIsReady; 
+	bool m_bIsReady;
 	//地图配置信息。
 	MSXML2::IXMLDOMDocumentPtr m_pXmlMapConfig;
 	//素材存放根路径。
 	CString m_strBaseDir;
 	Image* m_back;
 	//物件实例。
-	vector<CItem *> *m_pArrItems;
+	vector<CItem*>* m_pArrItems;
 	//物件定义。
 	CMap<CString, LPCTSTR, CItemDefinition*, CItemDefinition*> m_itemDefinitions;
 	//网格层。
@@ -136,8 +136,10 @@ public:
 	GdiplusStartupInput m_gdiplusStartupInput;
 	ULONG_PTR m_pGdiToken;
 	CDC m_backDC;
-	CDC m_bufferDC; 
+	CDC m_bufferDC;
 	bool m_bBackDone;
+	float mStartCol;
+	float mStartRow;
 protected:
 	HICON m_hIcon;
 public:

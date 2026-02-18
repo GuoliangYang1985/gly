@@ -16,8 +16,7 @@ using namespace std;
 static char THIS_FILE[] = __FILE__;
 #endif
 #pragma comment(lib,"Msimg32.lib")
-double testStartCol = 681;
-double testStartRow = -637.45;
+
 bool bOpen = true;
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
@@ -141,9 +140,10 @@ BOOL CGLYGameDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-
+	mStartCol = 1200;
+	mStartRow = 0;
 	//窗口最大化
-	//ShowWindow(SW_MAXIMIZE);
+	ShowWindow(SW_MAXIMIZE);
 	//加载地图数据
 	LoadMapData();
 	return true;  // return TRUE  unless you set the focus to a control
@@ -264,8 +264,8 @@ void CGLYGameDlg::RenderAll()
 		m_backDC.SelectObject(&backMap);
 		backMap.DeleteObject();
 
-		int x = int(testStartCol + m_BackGround.m_offsetX);
-		int y = int(testStartRow + m_BackGround.m_offsetY);
+		int x = int(mStartCol + m_BackGround.m_offsetX);
+		int y = int(mStartRow + m_BackGround.m_offsetY);
 		Graphics backgraphics(m_backDC.GetSafeHdc());
 		UINT bWidth = m_back->GetWidth();
 		UINT bHeight = m_back->GetHeight();
@@ -276,8 +276,8 @@ void CGLYGameDlg::RenderAll()
 	m_bufferDC.BitBlt(0, 0, mapWidth, mapHeight, &m_backDC, 0, 0, SRCCOPY);
 
 	Image* pAvatar = m_Avatar.m_pImage;
-	int ax = int(m_Avatar.m_fX + m_BackGround.m_offsetX + testStartCol);
-	int ay = int(m_Avatar.m_fY + m_BackGround.m_offsetY + testStartRow);
+	int ax = int(m_Avatar.m_fX + m_BackGround.m_offsetX + mStartCol);
+	int ay = int(m_Avatar.m_fY + m_BackGround.m_offsetY + mStartRow);
 	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	if (m_Avatar.m_bWalking)
 	{
@@ -303,9 +303,9 @@ void CGLYGameDlg::RenderAll()
 					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel, NULL, NULL, NULL);
 			}
 		}
-		float offsetX = float(item->GetX() + item->m_nOffsetX + testStartCol);
+		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol);
 		//Y轴方向偏移
-		float offsetY = float(item->GetY() + item->m_nOffsetY + testStartRow);
+		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow);
 
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, (Gdiplus::REAL)offsetX, (Gdiplus::REAL)offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
@@ -573,8 +573,8 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 	CTile* pStartNode = GetTileFromScreenCoordinate(p.m_fX, p.m_fY);
 
 	//计算终点。
-	point.x -= (long)testStartCol;
-	point.y -= (long)testStartRow;
+	point.x -= (long)mStartCol;
+	point.y -= (long)mStartRow;
 	CTile* pGoalNode = GetTileFromScreenCoordinate((float)point.x, (float)point.y);
 
 	if (!pGoalNode->GetWalkable())
