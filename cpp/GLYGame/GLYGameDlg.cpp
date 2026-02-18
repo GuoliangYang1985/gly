@@ -138,10 +138,7 @@ BOOL CGLYGameDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	// TODO: Add extra initialization here
 
-	mStartCol = 1200;
-	mStartRow = 0;
 	//窗口最大化
 	ShowWindow(SW_MAXIMIZE);
 	//加载地图数据
@@ -244,6 +241,12 @@ void CGLYGameDlg::RenderAll()
 	int mapWidth = rect.Width();
 	int mapHeight = rect.Height();
 
+	int bWidth = m_back->GetWidth();
+	int bHeight = m_back->GetHeight();
+
+	mStartCol = (mapWidth - bWidth) / 2 - m_BackGround.m_offsetX;
+	mStartRow = (mapHeight - bHeight) / 2 - m_BackGround.m_offsetY;
+
 	// 创建兼容位图
 	CBitmap cMap;
 	cMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
@@ -267,8 +270,7 @@ void CGLYGameDlg::RenderAll()
 		int x = int(mStartCol + m_BackGround.m_offsetX);
 		int y = int(mStartRow + m_BackGround.m_offsetY);
 		Graphics backgraphics(m_backDC.GetSafeHdc());
-		UINT bWidth = m_back->GetWidth();
-		UINT bHeight = m_back->GetHeight();
+
 		backgraphics.DrawImage(m_back, x, y, bWidth, bHeight);
 		backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
 	}
