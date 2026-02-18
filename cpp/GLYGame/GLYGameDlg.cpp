@@ -16,8 +16,6 @@ using namespace std;
 static char THIS_FILE[] = __FILE__;
 #endif
 
-bool bOpen = true;
-
 /**
  * CGLYGameDlg dialog
  */
@@ -85,23 +83,10 @@ END_MESSAGE_MAP()
 BOOL CGLYGameDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
-	// Add "About..." menu item to system menu.
 
 	// IDM_ABOUTBOX must be in the system command range.
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
-
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != NULL)
-	{
-		CString strAboutMenu;
-		strAboutMenu.LoadString(IDS_ABOUTBOX);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
@@ -116,7 +101,6 @@ BOOL CGLYGameDlg::OnInitDialog()
 	return true;  // return TRUE  unless you set the focus to a control
 }
 
-
 void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
@@ -125,7 +109,6 @@ void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
 	if (nType == SIZE_MINIMIZED)
 		return;
 }
-
 
 /**
  * If you add a minimize button to your dialog, you will need the code below
