@@ -15,7 +15,6 @@ using namespace std;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-#pragma comment(lib,"Msimg32.lib")
 
 bool bOpen = true;
 
@@ -305,19 +304,19 @@ void CGLYGameDlg::RenderAll()
 			{
 				bFinded = true;
 				graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
-					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel, NULL, NULL, NULL);
+					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
 			}
 		}
 		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol); // Offset in the X-axis direction.
 		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow); // Offset in the Y-axis direction.
 
 		Image* pImage = item->m_pImage;
-		graphics.DrawImage(pImage, (Gdiplus::REAL)offsetX, (Gdiplus::REAL)offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
+		graphics.DrawImage(pImage, offsetX, offsetY, pImage->GetWidth(), pImage->GetHeight());
 	}
 	if (!bFinded)
 	{
 		graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
-			m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel, NULL, NULL, NULL);
+			m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
 	}
 	hdc->BitBlt(0, 0, mapWidth, mapHeight, &m_bufferDC, 0, 0, SRCCOPY);
 	graphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
