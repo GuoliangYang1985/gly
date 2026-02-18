@@ -18,37 +18,6 @@ static char THIS_FILE[] = __FILE__;
 
 bool bOpen = true;
 
-
-/**
- * CAboutDlg dialog used for App About
- */
-class CAboutDlg : public CDialog
-{
-public:
-	CAboutDlg();
-	enum { IDD = IDD_ABOUTBOX };
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
-{
-
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-	//{{AFX_MSG_MAP(CAboutDlg)
-		// No message handlers
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
 /**
  * CGLYGameDlg dialog
  */
@@ -147,18 +116,6 @@ BOOL CGLYGameDlg::OnInitDialog()
 	return true;  // return TRUE  unless you set the focus to a control
 }
 
-void CGLYGameDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialog::OnSysCommand(nID, lParam);
-	}
-}
 
 void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
 {
@@ -250,12 +207,6 @@ void CGLYGameDlg::RenderAll()
 	int mapWidth = rect.Width();
 	int mapHeight = rect.Height();
 
-	int bWidth = m_back->GetWidth();
-	int bHeight = m_back->GetHeight();
-
-	mStartCol = (mapWidth - bWidth) / 2 - m_BackGround.m_offsetX;
-	mStartRow = (mapHeight - bHeight) / 2 - m_BackGround.m_offsetY;
-
 	CBitmap cMap;// 创建兼容位图
 	cMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
 	m_bufferDC.SelectObject(&cMap);// 兼容DC选入赚容位图
@@ -271,18 +222,22 @@ void CGLYGameDlg::RenderAll()
 		m_backDC.SelectObject(&backMap); // 兼容DC选入赚容位图
 		backMap.DeleteObject();
 	}
+	int bWidth = m_back->GetWidth();
+	int bHeight = m_back->GetHeight();
+	float x = (mapWidth - bWidth) / 2.0f;
+	float y = (mapHeight - bHeight) / 2.0f;
 
-	int x = mStartCol + m_BackGround.m_offsetX;
-	int y = mStartRow + m_BackGround.m_offsetY;
+	mStartCol = x - m_BackGround.m_offsetX;
+	mStartRow = y - m_BackGround.m_offsetY;
 	Graphics backgraphics(m_backDC.GetSafeHdc());
-	backgraphics.DrawImage(m_back, x, y, bWidth, bHeight);
+	backgraphics.DrawImage(m_back, (int)x, (int)y, bWidth, bHeight);
 	backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
 
 	m_bufferDC.BitBlt(0, 0, mapWidth, mapHeight, &m_backDC, 0, 0, SRCCOPY);
 
 	Image* pAvatar = m_Avatar.m_pImage;
-	int ax = int(m_Avatar.m_fX + m_BackGround.m_offsetX + mStartCol);
-	int ay = int(m_Avatar.m_fY + m_BackGround.m_offsetY + mStartRow);
+	int ax = int(m_Avatar.m_fX + x);
+	int ay = int(m_Avatar.m_fY + y);
 	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	if (m_Avatar.m_bWalking)
 	{
@@ -311,7 +266,7 @@ void CGLYGameDlg::RenderAll()
 		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow); // Offset in the Y-axis direction.
 
 		Image* pImage = item->m_pImage;
-		graphics.DrawImage(pImage, offsetX, offsetY, pImage->GetWidth(), pImage->GetHeight());
+		graphics.DrawImage(pImage, offsetX, offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
 	}
 	if (!bFinded)
 	{
