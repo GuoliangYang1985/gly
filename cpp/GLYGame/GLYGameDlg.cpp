@@ -18,9 +18,11 @@ static char THIS_FILE[] = __FILE__;
 #pragma comment(lib,"Msimg32.lib")
 
 bool bOpen = true;
-/////////////////////////////////////////////////////////////////////////////
-// CAboutDlg dialog used for App About
 
+
+/**
+ * CAboutDlg dialog used for App About
+ */
 class CAboutDlg : public CDialog
 {
 public:
@@ -48,9 +50,9 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CGLYGameDlg dialog
-
+/**
+ * CGLYGameDlg dialog
+ */
 CGLYGameDlg::CGLYGameDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CGLYGameDlg::IDD, pParent)
 {
@@ -60,8 +62,7 @@ CGLYGameDlg::CGLYGameDlg(CWnd* pParent /*=NULL*/)
 
 	GdiplusStartup(&m_pGdiToken, &m_gdiplusStartupInput, NULL);
 	m_bBackDone = false;
-	// 创建兼容DC
-	m_bufferDC.CreateCompatibleDC(NULL);
+	m_bufferDC.CreateCompatibleDC(NULL);// 创建兼容DC
 	m_backDC.CreateCompatibleDC(NULL);
 }
 
@@ -93,8 +94,7 @@ CGLYGameDlg::~CGLYGameDlg()
 	m_BackGround.UnLoad();
 	m_bufferDC.DeleteDC();
 	m_backDC.DeleteDC();
-	//卸载gdi+
-	GdiplusShutdown(m_pGdiToken);
+	GdiplusShutdown(m_pGdiToken);//卸载gdi+
 }
 
 void CGLYGameDlg::DoDataExchange(CDataExchange* pDX)
@@ -111,8 +111,9 @@ BEGIN_MESSAGE_MAP(CGLYGameDlg, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-/////////////////////////////////////////////////////////////////////////////
-// CGLYGameDlg message handlers
+/**
+ * CGLYGameDlg message handlers
+ */
 BOOL CGLYGameDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -167,12 +168,14 @@ void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
 	// 如果窗口最小化，无需处理
 	if (nType == SIZE_MINIMIZED)
 		return;
-	//GamePaint();
 }
 
-// If you add a minimize button to your dialog, you will need the code below
-//  to draw the icon.  For MFC applications using the document/view model,
-//  this is automatically done for you by the framework.
+
+/**
+ * If you add a minimize button to your dialog, you will need the code below
+ * to draw the icon.  For MFC applications using the document/view model,
+ * this is automatically done for you by the framework.
+ */
 void CGLYGameDlg::OnPaint()
 {
 	if (IsIconic())
@@ -197,8 +200,7 @@ void CGLYGameDlg::OnPaint()
 		CDialog::OnPaint();
 	}
 
-	//创建背景
-	CreateBackGroud();
+	CreateBackGroud();//创建背景
 
 	//如果网格没有初始化，则初始化。
 	if (!m_renderGrid.m_bIsReady)
@@ -265,13 +267,10 @@ void CGLYGameDlg::RenderAll()
 	if (!m_bBackDone)
 	{
 		m_bBackDone = true;
-
-		CBitmap backMap;// 创建兼容位图
+		CBitmap backMap; // 创建兼容位图
 		backMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
-		m_backDC.SelectObject(&backMap);// 兼容DC选入赚容位图
+		m_backDC.SelectObject(&backMap); // 兼容DC选入赚容位图
 		backMap.DeleteObject();
-
-
 	}
 
 	int x = mStartCol + m_BackGround.m_offsetX;
@@ -288,7 +287,7 @@ void CGLYGameDlg::RenderAll()
 	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	if (m_Avatar.m_bWalking)
 	{
-		++m_Avatar.m_nCurCol;//指向要绘制的帧
+		++m_Avatar.m_nCurCol; //指向要绘制的帧
 	}
 	if (m_Avatar.m_nCurCol >= COLS)
 	{
@@ -309,8 +308,8 @@ void CGLYGameDlg::RenderAll()
 					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel, NULL, NULL, NULL);
 			}
 		}
-		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol);//X轴方向偏移
-		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow);//Y轴方向偏移
+		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol); // Offset in the X-axis direction.
+		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow); // Offset in the Y-axis direction.
 
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, (Gdiplus::REAL)offsetX, (Gdiplus::REAL)offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
@@ -398,8 +397,7 @@ void CGLYGameDlg::CreateAllItem()
 		MSXML2::DOMNodeType nodeType = itemNode->nodeType;
 		if (nodeType == MSXML2::NODE_ELEMENT)
 		{
-			//得到NPC类型。
-			CString type = CXmlUtil::GetAttributeToCString(itemNode, "type");
+			CString type = CXmlUtil::GetAttributeToCString(itemNode, "type");// 得到NPC类型。
 			CItem* pItem = NULL;
 			if (type == "GoItem")
 			{
@@ -660,8 +658,10 @@ void CGLYGameDlg::OnTimer(int id)
 	}
 }
 
-// The system calls this to obtain the cursor to display while the user drags
-//  the minimized window.
+/**
+ * The system calls this to obtain the cursor to display while the user drags
+ * the minimized window.
+ */
 HCURSOR CGLYGameDlg::OnQueryDragIcon()
 {
 	return (HCURSOR)m_hIcon;
