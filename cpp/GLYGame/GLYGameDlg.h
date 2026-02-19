@@ -138,8 +138,8 @@ public:
 	CDC m_backDC;
 	CDC m_bufferDC;
 	bool m_bBackDone;
-	float mStartCol;
-	float mStartRow;
+	float mMapX;
+	float mMapY;
 protected:
 	HICON m_hIcon;
 public:

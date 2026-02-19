@@ -140,6 +140,8 @@ public:
 
 	//地图x偏移量。
 	int m_nMapOffSetX;
+
+	int m_nMapOffSetY;
 	
 	//当前行走路径。
 	vector<INode*> m_arrCurWalkPath;

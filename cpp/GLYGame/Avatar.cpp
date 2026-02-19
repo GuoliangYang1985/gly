@@ -105,7 +105,7 @@ void CAvatar::Walk()
 		m_arrCurWalkPath.erase(m_arrCurWalkPath.begin());
 		CGamePoint p = CMapUtil::GetScreenCoordinate(pNode->GetCol(), pNode->GetRow());
 		p.m_fX = p.m_fX - m_nMapOffSetX;
-		p.m_fY = p.m_fY;
+		p.m_fY = p.m_fY - m_nMapOffSetY;
 		m_nDrect = GetDirection(p);
 	}
 }
@@ -223,7 +223,7 @@ int CAvatar::GetCol()
 {
 	CGamePoint p;
 	p.m_fX = m_fX + m_nOffsetX + m_nMapOffSetX;
-	p.m_fY = m_fY + m_nOffsetY;
+	p.m_fY = m_fY + m_nOffsetY + m_nMapOffSetY;
 	CPoint point = CMapUtil::GetMapPointByScreen(p.m_fX, p.m_fY);
 	return point.x + 1;
 }
@@ -232,7 +232,7 @@ int CAvatar::GetRow()
 {
 	CGamePoint p;
 	p.m_fX = m_fX + m_nOffsetX + m_nMapOffSetX;
-	p.m_fY = m_fY + m_nOffsetY;
+	p.m_fY = m_fY + m_nOffsetY + m_nMapOffSetY;
 	CPoint point = CMapUtil::GetMapPointByScreen(p.m_fX, p.m_fY);
 	return point.y + 1;
 }

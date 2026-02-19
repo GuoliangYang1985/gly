@@ -187,11 +187,11 @@ void CGLYGameDlg::RenderAll()
 	GetClientRect(&rect);// 获取客户端范围
 	CDC* hdc = GetDC();// 获取源设备DC
 
-	int mapWidth = rect.Width();
-	int mapHeight = rect.Height();
+	int bWidth = m_back->GetWidth();
+	int bHeight = m_back->GetHeight();
 
 	CBitmap cMap;// 创建兼容位图
-	cMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
+	cMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
 	m_bufferDC.SelectObject(&cMap);// 兼容DC选入赚容位图
 	cMap.DeleteObject();
 
@@ -201,27 +201,17 @@ void CGLYGameDlg::RenderAll()
 	{
 		m_bBackDone = true;
 		CBitmap backMap; // 创建兼容位图
-		backMap.CreateCompatibleBitmap(hdc, mapWidth, mapHeight);
+		backMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
 		m_backDC.SelectObject(&backMap); // 兼容DC选入赚容位图
 		backMap.DeleteObject();
 	}
-	int bWidth = m_back->GetWidth();
-	int bHeight = m_back->GetHeight();
-	float x = (mapWidth - bWidth) / 2.0f;
-	float y = (mapHeight - bHeight) / 2.0f;
 
-	mStartCol = x - m_BackGround.m_offsetX;
-	mStartRow = y - m_BackGround.m_offsetY;
 	Graphics backgraphics(m_backDC.GetSafeHdc());
-	backgraphics.DrawImage(m_back, (int)x, (int)y, bWidth, bHeight);
+	backgraphics.DrawImage(m_back, 0, 0, bWidth, bHeight);
 	backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
-
-	m_bufferDC.BitBlt(0, 0, mapWidth, mapHeight, &m_backDC, 0, 0, SRCCOPY);
+	m_bufferDC.BitBlt(0, 0, bWidth, bHeight, &m_backDC, 0, 0, SRCCOPY);
 
 	Image* pAvatar = m_Avatar.m_pImage;
-	int ax = int(m_Avatar.m_fX + x);
-	int ay = int(m_Avatar.m_fY + y);
-	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	if (m_Avatar.m_bWalking)
 	{
 		++m_Avatar.m_nCurCol; //指向要绘制的帧
@@ -230,7 +220,9 @@ void CGLYGameDlg::RenderAll()
 	{
 		m_Avatar.m_nCurCol = 0;
 	}
-
+	int ax = int(m_Avatar.m_fX);
+	int ay = int(m_Avatar.m_fY);
+	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
 	BOOL bFinded = false;
 	vector<CItem*>::iterator iter;
 	for (iter = m_pArrItems->begin(); iter != m_pArrItems->end(); ++iter)
@@ -245,8 +237,8 @@ void CGLYGameDlg::RenderAll()
 					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
 			}
 		}
-		float offsetX = float(item->GetX() + item->m_nOffsetX + mStartCol); // Offset in the X-axis direction.
-		float offsetY = float(item->GetY() + item->m_nOffsetY + mStartRow); // Offset in the Y-axis direction.
+		float offsetX = float(item->GetX() + item->m_nOffsetX - m_BackGround.m_offsetX); // Offset in the X-axis direction.
+		float offsetY = float(item->GetY() + item->m_nOffsetY - m_BackGround.m_offsetY); // Offset in the Y-axis direction.
 
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, offsetX, offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
@@ -256,7 +248,9 @@ void CGLYGameDlg::RenderAll()
 		graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
 			m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
 	}
-	hdc->BitBlt(0, 0, mapWidth, mapHeight, &m_bufferDC, 0, 0, SRCCOPY);
+	mMapX = (rect.Width() - bWidth) / 2.0f;
+	mMapY = (rect.Height() - bHeight) / 2.0f;
+	hdc->BitBlt(mMapX, mMapY, bWidth, bHeight, &m_bufferDC, 0, 0, SRCCOPY);
 	graphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
 	hdc->DeleteDC();
 	if (m_Avatar.m_bWalking)
@@ -419,6 +413,7 @@ void CGLYGameDlg::LoadMapData()
 	m_BackGround.m_strBackPath = strDir + strMapPath;
 	m_BackGround.m_offsetX = GetAttributeF(m_pXmlMapConfig, "map/background", "x_offset");
 	m_Avatar.m_nMapOffSetX = (int)m_BackGround.m_offsetX;
+	m_Avatar.m_nMapOffSetY = (int)m_BackGround.m_offsetY;
 	m_BackGround.m_offsetY = GetAttributeF(m_pXmlMapConfig, "map/background", "y_offset");
 	m_nCols = m_BackGround.m_nCols = (int)GetAttributeF(m_pXmlMapConfig, "map/background", "cols");
 	m_nRows = m_BackGround.m_nRows = (int)GetAttributeF(m_pXmlMapConfig, "map/background", "rows");
@@ -513,8 +508,9 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 	CTile* pStartNode = GetTileFromScreenCoordinate(p.m_fX, p.m_fY);
 
 	//计算终点。
-	point.x -= (long)mStartCol;
-	point.y -= (long)mStartRow;
+	point.x += (long)m_BackGround.m_offsetX - mMapX;
+	point.y += (long)m_BackGround.m_offsetY - mMapY;
+
 	CTile* pGoalNode = GetTileFromScreenCoordinate((float)point.x, (float)point.y);
 
 	if (!pGoalNode->GetWalkable())
