@@ -500,8 +500,8 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 {
 	//计算起始点。
 	CGamePoint p;
-	p.m_fX = m_Avatar.m_fX + (m_BackGround.m_offsetX + m_Avatar.m_nOffsetX);
-	p.m_fY = m_Avatar.m_fY + (m_BackGround.m_offsetY + m_Avatar.m_nOffsetY);
+	p.m_fX = m_Avatar.GetViewX() + m_BackGround.m_offsetX;
+	p.m_fY = m_Avatar.GetViewY() + m_BackGround.m_offsetY;
 	CTile* pStartNode = GetTileFromScreenCoordinate(p.m_fX, p.m_fY);
 
 	//计算终点。

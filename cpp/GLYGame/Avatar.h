@@ -25,7 +25,7 @@ const unsigned int COLS = 8;
  * 创建人：杨国梁。
  * 创建时间：2011-10-26。
  */
-class CAvatar:public CImage
+class CAvatar :public CImage
 {
 public:
 	/**
@@ -57,16 +57,16 @@ public:
 	 * 行走。
 	 */
 	void Walk();
-	
+
 	/**
 	 * 开始移动
 	 */
-	void StartWalk(CPath *pPath);
+	void StartWalk(CPath* pPath);
 
 	/**
 	 * 根据下一个到到达的点得到角色索方向。
 	 * @param point 要移动到的下一点。
-	 * @return 角色的方向。 
+	 * @return 角色的方向。
 	 */
 	int GetDirection(CGamePoint point);
 
@@ -88,7 +88,7 @@ public:
 	 * 计算位置
 	 */
 	void CalculatePosition();
-	
+
 	/**
 	 * 得到下一步要行走的距离
 	 * @return 下一步要行走的距离
@@ -101,6 +101,16 @@ public:
 	float GetNextMoveDistance();
 	int GetCol();
 	int GetRow();
+
+	/**
+	 * 计算视图位置的X坐标。
+	 */
+	float GetViewX();
+
+	/**
+	 * 计算视图位置的Y坐标。
+	 */
+	float GetViewY();
 public:
 	//角色的宽度。
 	unsigned int m_nWidth;
@@ -142,7 +152,7 @@ public:
 	int m_nMapOffSetX;
 
 	int m_nMapOffSetY;
-	
+
 	//当前行走路径。
 	vector<INode*> m_arrCurWalkPath;
 
@@ -156,7 +166,7 @@ private:
 	unsigned int m_nRow;
 public:
 	//角色方向
-	enum 
+	enum
 	{
 		RIGHT,		//0			右		
 		RIGHT_DOWN, //1			右下		
@@ -168,6 +178,6 @@ public:
 		RIGHT_UP,	//7			右上
 
 		SPEED = 10, //行走单位速度
-	};	
+	};
 };
 #endif

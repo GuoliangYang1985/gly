@@ -117,8 +117,8 @@ void CAvatar::Walk()
  */
 int CAvatar::GetDirection(CGamePoint point)
 {
-	float fX = point.m_fX - (m_fX + m_nOffsetX);
-	float fY = point.m_fY - (m_fY + m_nOffsetY);
+	float fX = point.m_fX - GetViewX();
+	float fY = point.m_fY - GetViewY();
 	//得到弧度制角度
 	m_fRadian = atan2f(fY, fX);
 	float angle = (float)(m_fRadian * 180 / PI);
@@ -222,8 +222,8 @@ CSpeed CAvatar::GetNextDistance()
 int CAvatar::GetCol()
 {
 	CGamePoint p;
-	p.m_fX = m_fX + m_nOffsetX + m_nMapOffSetX;
-	p.m_fY = m_fY + m_nOffsetY + m_nMapOffSetY;
+	p.m_fX = GetViewX() + m_nMapOffSetX;
+	p.m_fY = GetViewY() + m_nMapOffSetY;
 	CPoint point = CMapUtil::GetMapPointByScreen(p.m_fX, p.m_fY);
 	return point.x + 1;
 }
@@ -231,8 +231,18 @@ int CAvatar::GetCol()
 int CAvatar::GetRow()
 {
 	CGamePoint p;
-	p.m_fX = m_fX + m_nOffsetX + m_nMapOffSetX;
-	p.m_fY = m_fY + m_nOffsetY + m_nMapOffSetY;
+	p.m_fX = GetViewX() + m_nMapOffSetX;
+	p.m_fY = GetViewY() + m_nMapOffSetY;
 	CPoint point = CMapUtil::GetMapPointByScreen(p.m_fX, p.m_fY);
 	return point.y + 1;
+}
+
+float CAvatar::GetViewX()
+{
+	return m_fX + m_nOffsetX;
+}
+
+float CAvatar::GetViewY()
+{
+	return  m_fY + m_nOffsetY;
 }
