@@ -27,9 +27,9 @@ CGLYGameDlg::CGLYGameDlg(CWnd* pParent /*=NULL*/)
 	m_pArrItems = new vector<CItem*>();
 
 	GdiplusStartup(&m_pGdiToken, &m_gdiplusStartupInput, NULL);
-	m_bBackDone = false;
-	m_bufferDC.CreateCompatibleDC(NULL);// 创建兼容DC
-	m_backDC.CreateCompatibleDC(NULL);
+	mBackDone = false;
+	mMapDC.CreateCompatibleDC(NULL);// 创建兼容DC
+	mBackDC.CreateCompatibleDC(NULL);
 }
 
 CGLYGameDlg::~CGLYGameDlg()
@@ -58,8 +58,8 @@ CGLYGameDlg::~CGLYGameDlg()
 	}
 	m_Avatar.UnLoad();
 	m_BackGround.UnLoad();
-	m_bufferDC.DeleteDC();
-	m_backDC.DeleteDC();
+	mBackDC.DeleteDC();
+	mMapDC.DeleteDC();
 	GdiplusShutdown(m_pGdiToken);//卸载gdi+
 }
 
@@ -192,24 +192,13 @@ void CGLYGameDlg::RenderAll()
 
 	CBitmap cMap;// 创建兼容位图
 	cMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
-	m_bufferDC.SelectObject(&cMap);// 兼容DC选入赚容位图
+	mMapDC.SelectObject(&cMap);// 兼容DC选入赚容位图
 	cMap.DeleteObject();
 
-	Graphics graphics(m_bufferDC.GetSafeHdc());
+	Graphics graphics(mMapDC.GetSafeHdc());
 
-	if (!m_bBackDone)
-	{
-		m_bBackDone = true;
-		CBitmap backMap; // 创建兼容位图
-		backMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
-		m_backDC.SelectObject(&backMap); // 兼容DC选入赚容位图
-		backMap.DeleteObject();
-	}
-
-	Graphics backgraphics(m_backDC.GetSafeHdc());
-	backgraphics.DrawImage(m_back, 0, 0, bWidth, bHeight);
-	backgraphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
-	m_bufferDC.BitBlt(0, 0, bWidth, bHeight, &m_backDC, 0, 0, SRCCOPY);
+	graphics.DrawImage(m_back, 0, 0, bWidth, bHeight);
+	graphics.ReleaseHDC(mMapDC.GetSafeHdc());
 
 	Image* pAvatar = m_Avatar.m_pImage;
 	if (m_Avatar.m_bWalking)
@@ -239,7 +228,6 @@ void CGLYGameDlg::RenderAll()
 		}
 		float offsetX = float(item->GetX() + item->m_nOffsetX - m_BackGround.m_offsetX); // Offset in the X-axis direction.
 		float offsetY = float(item->GetY() + item->m_nOffsetY - m_BackGround.m_offsetY); // Offset in the Y-axis direction.
-
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, offsetX, offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
 	}
@@ -248,11 +236,20 @@ void CGLYGameDlg::RenderAll()
 		graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
 			m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
 	}
-	mMapX = (rect.Width() - bWidth) / 2.0f;
-	mMapY = (rect.Height() - bHeight) / 2.0f;
-	hdc->BitBlt(mMapX, mMapY, bWidth, bHeight, &m_bufferDC, 0, 0, SRCCOPY);
-	graphics.ReleaseHDC(m_bufferDC.GetSafeHdc());
-	hdc->DeleteDC();
+	mMapX = (rect.Width() - bWidth) / 2.0f - ax - m_BackGround.m_offsetX;
+	mMapY = (rect.Height() - bHeight) / 2.0f - ay + 800;
+
+	mBackDone = true;
+	CBitmap backMap; // 创建兼容位图
+	backMap.CreateCompatibleBitmap(hdc, rect.Width(), rect.Height());
+	mBackDC.SelectObject(&backMap); // 兼容DC选入赚容位图
+
+	CBrush blackBrush(RGB(0, 0, 0));   // 创建黑色画刷
+	mBackDC.FillRect(&rect, &blackBrush); // 填充为黑色
+	mBackDC.BitBlt(mMapX, mMapY, bWidth, bHeight, &mMapDC, 0, 0, SRCCOPY);
+
+	hdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mBackDC, 0, 0, SRCCOPY);
+	graphics.ReleaseHDC(mBackDC.GetSafeHdc());
 	if (m_Avatar.m_bWalking)
 	{
 		m_Avatar.GetNextDistance();

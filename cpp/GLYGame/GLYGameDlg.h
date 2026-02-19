@@ -135,9 +135,11 @@ public:
 
 	GdiplusStartupInput m_gdiplusStartupInput;
 	ULONG_PTR m_pGdiToken;
-	CDC m_backDC;
-	CDC m_bufferDC;
-	bool m_bBackDone;
+	//地图和背景。
+	CDC mBackDC;
+	//地图的所有内容。
+	CDC mMapDC;
+	bool mBackDone;
 	float mMapX;
 	float mMapY;
 protected:
@@ -152,8 +154,5 @@ public:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(AFX_GLYGAMEDLG_H__C2D68685_30D8_4E6D_B7A3_49B9DDEB3446__INCLUDED_)
