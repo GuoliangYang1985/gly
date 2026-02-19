@@ -108,42 +108,46 @@ public:
 	int GetCols();
 	int GetRows();
 	INode* GetNode(int col, int row);
+	/**
+	 * 窗口大小发生变化处理。
+	 */
+	void OnWindowSizeChanged(CRect rect);
 public:
 	//角色。
-	CAvatar m_Avatar;
+	CAvatar mAvatar;
 	//背景。
-	CBackGround m_BackGround;
+	CBackGround mBackGround;
 	//是否初始化完成。
 	bool m_bIsReady;
 	//地图配置信息。
-	MSXML2::IXMLDOMDocumentPtr m_pXmlMapConfig;
+	MSXML2::IXMLDOMDocumentPtr mXmlMapConfig;
 	//素材存放根路径。
-	CString m_strBaseDir;
-	Image* m_back;
+	CString mBaseDir;
+	Image* mBack;
 	//物件实例。
-	vector<CItem*>* m_pArrItems;
+	vector<CItem*>* mArrItems;
 	//物件定义。
 	CMap<CString, LPCTSTR, CItemDefinition*, CItemDefinition*> m_itemDefinitions;
 	//网格层。
-	CRenderGrid m_renderGrid;
+	CRenderGrid mRenderGrid;
 	//游戏所占的列数。
-	int m_nCols;
+	int mCols;
 	//游戏所占的行数。
-	int m_nRows;
+	int mRows;
 	//用于寻路。
-	CAstar m_astar;
+	CAstar mAstar;
 
-	GdiplusStartupInput m_gdiplusStartupInput;
-	ULONG_PTR m_pGdiToken;
+	GdiplusStartupInput mGdiplusStartupInput;
+	ULONG_PTR mGdiToken;
 	//地图和背景。
 	CDC mBackDC;
 	//地图的所有内容。
 	CDC mMapDC;
-	bool mBackDone;
+	CBitmap mBackMap;
 	float mMapX;
 	float mMapY;
 protected:
-	HICON m_hIcon;
+	HICON mIcon;
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CGLYGameDlg)

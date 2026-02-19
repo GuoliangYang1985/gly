@@ -22,29 +22,28 @@ static char THIS_FILE[] = __FILE__;
 CGLYGameDlg::CGLYGameDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CGLYGameDlg::IDD, pParent)
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	mIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	m_bIsReady = false;
-	m_pArrItems = new vector<CItem*>();
+	mArrItems = new vector<CItem*>();
 
-	GdiplusStartup(&m_pGdiToken, &m_gdiplusStartupInput, NULL);
-	mBackDone = false;
+	GdiplusStartup(&mGdiToken, &mGdiplusStartupInput, NULL);
 	mMapDC.CreateCompatibleDC(NULL);// 创建兼容DC
 	mBackDC.CreateCompatibleDC(NULL);
 }
 
 CGLYGameDlg::~CGLYGameDlg()
 {
-	if (m_pXmlMapConfig != NULL)
+	if (mXmlMapConfig != NULL)
 	{
-		m_pXmlMapConfig.Release();
-		m_pXmlMapConfig = NULL;
+		mXmlMapConfig.Release();
+		mXmlMapConfig = NULL;
 		CoUninitialize();
 	}
 	DeleteAllItemDefination();
-	if (m_pArrItems != NULL)
+	if (mArrItems != NULL)
 	{
 		vector<CItem*>::iterator iter;
-		for (iter = m_pArrItems->begin(); iter != m_pArrItems->end(); ++iter)
+		for (iter = mArrItems->begin(); iter != mArrItems->end(); ++iter)
 		{
 			if (*iter != NULL)
 			{
@@ -52,15 +51,15 @@ CGLYGameDlg::~CGLYGameDlg()
 				*iter = NULL;
 			}
 		}
-		m_pArrItems->clear();
-		delete m_pArrItems;
-		m_pArrItems = NULL;
+		mArrItems->clear();
+		delete mArrItems;
+		mArrItems = NULL;
 	}
-	m_Avatar.UnLoad();
-	m_BackGround.UnLoad();
+	mAvatar.UnLoad();
+	mBackGround.UnLoad();
 	mBackDC.DeleteDC();
 	mMapDC.DeleteDC();
-	GdiplusShutdown(m_pGdiToken);//卸载gdi+
+	GdiplusShutdown(mGdiToken);//卸载gdi+
 }
 
 void CGLYGameDlg::DoDataExchange(CDataExchange* pDX)
@@ -90,8 +89,8 @@ BOOL CGLYGameDlg::OnInitDialog()
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
-	SetIcon(m_hIcon, TRUE);			// Set big icon
-	SetIcon(m_hIcon, FALSE);		// Set small icon
+	SetIcon(mIcon, TRUE);			// Set big icon
+	SetIcon(mIcon, FALSE);		// Set small icon
 
 
 	//窗口最大化
@@ -104,10 +103,23 @@ BOOL CGLYGameDlg::OnInitDialog()
 void CGLYGameDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
+	if (nType != SIZE_MINIMIZED) // 最小化时通常无需处理
+	{
+		CRect rect(0, 0, cx, cy); // 直接用传入的 cx, cy
+		OnWindowSizeChanged(rect);
+	}
+}
 
-	// 如果窗口最小化，无需处理
-	if (nType == SIZE_MINIMIZED)
-		return;
+void CGLYGameDlg::OnWindowSizeChanged(CRect rect)
+{
+	if (mBackDC.GetSafeHdc())
+	{
+		// 重新创建与窗口大小匹配的位图
+		CClientDC dc(this);
+		mBackMap.DeleteObject();
+		mBackMap.CreateCompatibleBitmap(&dc, rect.Width(), rect.Height());
+		mBackDC.SelectObject(&mBackMap);
+	}
 }
 
 /**
@@ -132,7 +144,7 @@ void CGLYGameDlg::OnPaint()
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
 		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
+		dc.DrawIcon(x, y, mIcon);
 	}
 	else
 	{
@@ -142,20 +154,20 @@ void CGLYGameDlg::OnPaint()
 	CreateBackGroud();//创建背景
 
 	//如果网格没有初始化，则初始化。
-	if (!m_renderGrid.m_bIsReady)
+	if (!mRenderGrid.m_bIsReady)
 	{
-		m_renderGrid.CreateGrid(m_nCols, m_nRows);
-		m_renderGrid.ParseTileXML(m_pXmlMapConfig);
+		mRenderGrid.CreateGrid(mCols, mRows);
+		mRenderGrid.ParseTileXML(mXmlMapConfig);
 	}
 
-	if (!m_Avatar.m_bIsReady)
+	if (!mAvatar.m_bIsReady)
 	{
-		m_Avatar.Load("resource/avatar/male.png");
-		if (m_Avatar.m_bIsReady)
+		mAvatar.Load("resource/avatar/male.png");
+		if (mAvatar.m_bIsReady)
 		{
-			CGamePoint p = CMapUtil::GetScreenCoordinate(m_BackGround.m_nStartCol, m_BackGround.m_nStartRow);
-			m_Avatar.m_fX = p.m_fX - m_BackGround.m_offsetX - m_Avatar.m_nOffsetX;
-			m_Avatar.m_fY = p.m_fY - m_BackGround.m_offsetY - m_Avatar.m_nOffsetY;
+			CGamePoint p = CMapUtil::GetScreenCoordinate(mBackGround.m_nStartCol, mBackGround.m_nStartRow);
+			mAvatar.m_fX = p.m_fX - mBackGround.m_offsetX - mAvatar.m_nOffsetX;
+			mAvatar.m_fY = p.m_fY - mBackGround.m_offsetY - mAvatar.m_nOffsetY;
 		}
 	}
 	GamePaint();
@@ -173,7 +185,7 @@ void CGLYGameDlg::GamePaint()
 
 void CGLYGameDlg::DrawSortedAll()
 {
-	if (m_pArrItems->size() <= 0)
+	if (mArrItems->size() <= 0)
 	{
 		CreateAllItem();
 		SortPosition();
@@ -187,62 +199,56 @@ void CGLYGameDlg::RenderAll()
 	GetClientRect(&rect);// 获取客户端范围
 	CDC* hdc = GetDC();// 获取源设备DC
 
-	int bWidth = m_back->GetWidth();
-	int bHeight = m_back->GetHeight();
+	int bWidth = mBack->GetWidth();
+	int bHeight = mBack->GetHeight();
 
 	CBitmap cMap;// 创建兼容位图
 	cMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
 	mMapDC.SelectObject(&cMap);// 兼容DC选入赚容位图
-	cMap.DeleteObject();
 
 	Graphics graphics(mMapDC.GetSafeHdc());
 
-	graphics.DrawImage(m_back, 0, 0, bWidth, bHeight);
+	graphics.DrawImage(mBack, 0, 0, bWidth, bHeight);
 	graphics.ReleaseHDC(mMapDC.GetSafeHdc());
 
-	Image* pAvatar = m_Avatar.m_pImage;
-	if (m_Avatar.m_bWalking)
+	Image* pAvatar = mAvatar.m_pImage;
+	if (mAvatar.m_bWalking)
 	{
-		++m_Avatar.m_nCurCol; //指向要绘制的帧
+		++mAvatar.m_nCurCol; //指向要绘制的帧
 	}
-	if (m_Avatar.m_nCurCol >= COLS)
+	if (mAvatar.m_nCurCol >= COLS)
 	{
-		m_Avatar.m_nCurCol = 0;
+		mAvatar.m_nCurCol = 0;
 	}
-	int ax = int(m_Avatar.m_fX);
-	int ay = int(m_Avatar.m_fY);
-	Rect r1(ax, ay, m_Avatar.m_nWidth, m_Avatar.m_nHeight);
+	int ax = int(mAvatar.m_fX);
+	int ay = int(mAvatar.m_fY);
+	Rect r1(ax, ay, mAvatar.m_nWidth, mAvatar.m_nHeight);
 	BOOL bFinded = false;
 	vector<CItem*>::iterator iter;
-	for (iter = m_pArrItems->begin(); iter != m_pArrItems->end(); ++iter)
+	for (iter = mArrItems->begin(); iter != mArrItems->end(); ++iter)
 	{
 		CItem* item = *iter;
 		if (!bFinded)
 		{
-			if (m_Avatar.GetCol() < item->m_nCol + item->m_nCols && m_Avatar.GetRow() < item->m_nRow + item->m_nRows)
+			if (mAvatar.GetCol() < item->m_nCol + item->m_nCols && mAvatar.GetRow() < item->m_nRow + item->m_nRows)
 			{
 				bFinded = true;
-				graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
-					m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
+				graphics.DrawImage(pAvatar, r1, mAvatar.m_nWidth * mAvatar.m_nCurCol, mAvatar.m_nHeight * mAvatar.m_nDrect,
+					mAvatar.m_nWidth, mAvatar.m_nHeight, UnitPixel);
 			}
 		}
-		float offsetX = float(item->GetX() + item->m_nOffsetX - m_BackGround.m_offsetX); // Offset in the X-axis direction.
-		float offsetY = float(item->GetY() + item->m_nOffsetY - m_BackGround.m_offsetY); // Offset in the Y-axis direction.
+		float offsetX = float(item->GetX() + item->m_nOffsetX - mBackGround.m_offsetX); // Offset in the X-axis direction.
+		float offsetY = float(item->GetY() + item->m_nOffsetY - mBackGround.m_offsetY); // Offset in the Y-axis direction.
 		Image* pImage = item->m_pImage;
 		graphics.DrawImage(pImage, offsetX, offsetY, (Gdiplus::REAL)pImage->GetWidth(), (Gdiplus::REAL)pImage->GetHeight());
 	}
 	if (!bFinded)
 	{
-		graphics.DrawImage(pAvatar, r1, m_Avatar.m_nWidth * m_Avatar.m_nCurCol, m_Avatar.m_nHeight * m_Avatar.m_nDrect,
-			m_Avatar.m_nWidth, m_Avatar.m_nHeight, UnitPixel);
+		graphics.DrawImage(pAvatar, r1, mAvatar.m_nWidth * mAvatar.m_nCurCol, mAvatar.m_nHeight * mAvatar.m_nDrect,
+			mAvatar.m_nWidth, mAvatar.m_nHeight, UnitPixel);
 	}
-	mMapX = (rect.Width() - bWidth) / 2.0f - ax - m_BackGround.m_offsetX;
+	mMapX = (rect.Width() - bWidth) / 2.0f - ax - mBackGround.m_offsetX;
 	mMapY = (rect.Height() - bHeight) / 2.0f - ay + 800;
-
-	mBackDone = true;
-	CBitmap backMap; // 创建兼容位图
-	backMap.CreateCompatibleBitmap(hdc, rect.Width(), rect.Height());
-	mBackDC.SelectObject(&backMap); // 兼容DC选入赚容位图
 
 	CBrush blackBrush(RGB(0, 0, 0));   // 创建黑色画刷
 	mBackDC.FillRect(&rect, &blackBrush); // 填充为黑色
@@ -250,12 +256,13 @@ void CGLYGameDlg::RenderAll()
 
 	hdc->BitBlt(0, 0, rect.Width(), rect.Height(), &mBackDC, 0, 0, SRCCOPY);
 	graphics.ReleaseHDC(mBackDC.GetSafeHdc());
-	if (m_Avatar.m_bWalking)
+	if (mAvatar.m_bWalking)
 	{
-		m_Avatar.GetNextDistance();
-		m_Avatar.CalculatePosition();
+		mAvatar.GetNextDistance();
+		mAvatar.CalculatePosition();
 	}
 }
+
 
 /**
  * 解析所有素材定义数据并创建与之对应ItemDefination。
@@ -264,7 +271,7 @@ void CGLYGameDlg::CreateAllItemDefination()
 {
 	if (m_itemDefinitions.IsEmpty())
 	{
-		MSXML2::IXMLDOMElementPtr itemDefsNode = (MSXML2::IXMLDOMElementPtr)m_pXmlMapConfig->selectSingleNode("map/ItemDefinitions");
+		MSXML2::IXMLDOMElementPtr itemDefsNode = (MSXML2::IXMLDOMElementPtr)mXmlMapConfig->selectSingleNode("map/ItemDefinitions");
 		MSXML2::IXMLDOMNodeListPtr itemDefList = itemDefsNode->GetchildNodes();
 		int nCount = itemDefList->length;
 		for (int i = 0; i < nCount; ++i)
@@ -274,7 +281,7 @@ void CGLYGameDlg::CreateAllItemDefination()
 			if (nodeType == MSXML2::NODE_ELEMENT)
 			{
 				CItemDefinition* pItemDef = new CItemDefinition();
-				pItemDef->m_strBaseDirectory = m_strBaseDir;
+				pItemDef->m_strBaseDirectory = mBaseDir;
 				pItemDef->FromXml(itemDefNode);
 				CString strFileUrl = pItemDef->m_strBaseDirectory + pItemDef->m_strFile;
 				pItemDef->Load(strFileUrl);
@@ -314,8 +321,8 @@ void CGLYGameDlg::DeleteAllItemDefination()
  */
 void CGLYGameDlg::CreateAllItem()
 {
-	m_back = m_BackGround.GetImage();
-	MSXML2::IXMLDOMElementPtr itemsNode = (MSXML2::IXMLDOMElementPtr)(m_pXmlMapConfig->selectSingleNode("map/Items"));
+	mBack = mBackGround.GetImage();
+	MSXML2::IXMLDOMElementPtr itemsNode = (MSXML2::IXMLDOMElementPtr)(mXmlMapConfig->selectSingleNode("map/Items"));
 	MSXML2::IXMLDOMNodeListPtr itemList = itemsNode->GetchildNodes();
 
 	long lCount = itemList->length;
@@ -340,7 +347,7 @@ void CGLYGameDlg::CreateAllItem()
 			CItemDefinition* pItemDef;
 			m_itemDefinitions.Lookup(pItem->m_strSource, pItemDef);
 			pItem->SetItemDefinition(pItemDef);
-			m_pArrItems->push_back(pItem);
+			mArrItems->push_back(pItem);
 			for (int i = pItem->m_nCol; i < pItem->m_nCol + pItem->m_nCols; ++i)
 			{
 				for (int j = pItem->m_nRow; j < pItem->m_nRow + pItem->m_nRows; ++j)
@@ -361,11 +368,11 @@ void CGLYGameDlg::CreateAllItem()
  */
 void CGLYGameDlg::SortPosition()
 {
-	if (m_pArrItems->size() > 0)
+	if (mArrItems->size() > 0)
 	{
 		vector<CItem*>* pArrItems = new vector<CItem*>();
 		vector<CItem*>::iterator iter;
-		for (iter = m_pArrItems->begin(); iter != m_pArrItems->end(); ++iter)
+		for (iter = mArrItems->begin(); iter != mArrItems->end(); ++iter)
 		{
 			CItem* nsi = *iter;
 			bool added = false;
@@ -386,8 +393,8 @@ void CGLYGameDlg::SortPosition()
 			}
 		}
 
-		delete m_pArrItems;
-		m_pArrItems = pArrItems;
+		delete mArrItems;
+		mArrItems = pArrItems;
 		pArrItems = NULL;
 	}
 }
@@ -398,23 +405,23 @@ void CGLYGameDlg::SortPosition()
 void CGLYGameDlg::LoadMapData()
 {
 	CoInitialize(NULL);
-	HRESULT	hResult = m_pXmlMapConfig.CreateInstance(__uuidof(DOMDocument30));
+	HRESULT	hResult = mXmlMapConfig.CreateInstance(__uuidof(DOMDocument30));
 	if (!SUCCEEDED(hResult))
 	{
 		//MessageBox("创建DOMDocument对象，请检查是否安装了MS XML Parser运行库！");
 	}
-	m_pXmlMapConfig->load("resource/map/gly.xml");
-	CString strDir = GetAttribute(m_pXmlMapConfig, "map", "dir");
-	m_strBaseDir = strDir;
-	CString	strMapPath = GetAttribute(m_pXmlMapConfig, "map/background", "file");
-	m_BackGround.m_strBackPath = strDir + strMapPath;
-	m_BackGround.m_offsetX = GetAttributeF(m_pXmlMapConfig, "map/background", "x_offset");
-	m_Avatar.m_nMapOffSetX = (int)m_BackGround.m_offsetX;
-	m_Avatar.m_nMapOffSetY = (int)m_BackGround.m_offsetY;
-	m_BackGround.m_offsetY = GetAttributeF(m_pXmlMapConfig, "map/background", "y_offset");
-	m_nCols = m_BackGround.m_nCols = (int)GetAttributeF(m_pXmlMapConfig, "map/background", "cols");
-	m_nRows = m_BackGround.m_nRows = (int)GetAttributeF(m_pXmlMapConfig, "map/background", "rows");
-	m_astar.Init(this);
+	mXmlMapConfig->load("resource/map/gly.xml");
+	CString strDir = GetAttribute(mXmlMapConfig, "map", "dir");
+	mBaseDir = strDir;
+	CString	strMapPath = GetAttribute(mXmlMapConfig, "map/background", "file");
+	mBackGround.m_strBackPath = strDir + strMapPath;
+	mBackGround.m_offsetX = GetAttributeF(mXmlMapConfig, "map/background", "x_offset");
+	mAvatar.m_nMapOffSetX = (int)mBackGround.m_offsetX;
+	mAvatar.m_nMapOffSetY = (int)mBackGround.m_offsetY;
+	mBackGround.m_offsetY = GetAttributeF(mXmlMapConfig, "map/background", "y_offset");
+	mCols = mBackGround.m_nCols = (int)GetAttributeF(mXmlMapConfig, "map/background", "cols");
+	mRows = mBackGround.m_nRows = (int)GetAttributeF(mXmlMapConfig, "map/background", "rows");
+	mAstar.Init(this);
 }
 
 /**
@@ -455,12 +462,12 @@ float CGLYGameDlg::GetAttributeF(MSXML2::IXMLDOMDocumentPtr pXmlMapConfig, _bstr
 CTile* CGLYGameDlg::GetTileFromScreenCoordinate(float tx, float ty)
 {
 	CPoint point = CMapUtil::GetMapPointByScreen(tx, ty);
-	return m_renderGrid.GetTile(point.x, point.y);
+	return mRenderGrid.GetTile(point.x, point.y);
 }
 
 CTile* CGLYGameDlg::GetTile(int col, int row)
 {
-	return m_renderGrid.GetTile(col, row);
+	return mRenderGrid.GetTile(col, row);
 }
 
 /**
@@ -468,9 +475,9 @@ CTile* CGLYGameDlg::GetTile(int col, int row)
  */
 void CGLYGameDlg::CreateBackGroud()
 {
-	if (!m_BackGround.m_bIsReady)
+	if (!mBackGround.m_bIsReady)
 	{
-		m_BackGround.Load(m_BackGround.m_strBackPath);
+		mBackGround.Load(mBackGround.m_strBackPath);
 	}
 }
 
@@ -500,13 +507,13 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 {
 	//计算起始点。
 	CGamePoint p;
-	p.m_fX = m_Avatar.GetViewX() + m_BackGround.m_offsetX;
-	p.m_fY = m_Avatar.GetViewY() + m_BackGround.m_offsetY;
+	p.m_fX = mAvatar.GetViewX() + mBackGround.m_offsetX;
+	p.m_fY = mAvatar.GetViewY() + mBackGround.m_offsetY;
 	CTile* pStartNode = GetTileFromScreenCoordinate(p.m_fX, p.m_fY);
 
 	//计算终点。
-	point.x += (long)m_BackGround.m_offsetX - mMapX;
-	point.y += (long)m_BackGround.m_offsetY - mMapY;
+	point.x += (long)mBackGround.m_offsetX - mMapX;
+	point.y += (long)mBackGround.m_offsetY - mMapY;
 
 	CTile* pGoalNode = GetTileFromScreenCoordinate((float)point.x, (float)point.y);
 
@@ -521,7 +528,7 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 		OutputDebugString(_T("当前位置就是要到达的位置!"));
 		return;
 	}
-	CSearchResults result = m_astar.Search(pStartNode, pGoalNode);
+	CSearchResults result = mAstar.Search(pStartNode, pGoalNode);
 	if (!result.GetIsSuccess())
 	{
 		OutputDebugString(_T("没有寻到可行走路径!\n"));
@@ -529,7 +536,7 @@ void CGLYGameDlg::LButtonDown(UINT modKeys, CPoint point)
 	}
 	StartTimer();
 	CPath* pPath = result.GetPath();
-	m_Avatar.StartWalk(pPath);
+	mAvatar.StartWalk(pPath);
 }
 
 /**
@@ -580,7 +587,7 @@ void CGLYGameDlg::OnTimer(int id)
 	if (id == 1)
 	{
 		GamePaint();
-		if (!m_Avatar.m_bWalking)
+		if (!mAvatar.m_bWalking)
 		{
 			RenderAll();
 			KillTimer(id);
@@ -594,17 +601,17 @@ void CGLYGameDlg::OnTimer(int id)
  */
 HCURSOR CGLYGameDlg::OnQueryDragIcon()
 {
-	return (HCURSOR)m_hIcon;
+	return (HCURSOR)mIcon;
 }
 
 int CGLYGameDlg::GetCols()
 {
-	return m_nCols;
+	return mCols;
 }
 
 int CGLYGameDlg::GetRows()
 {
-	return m_nRows;
+	return mRows;
 }
 
 INode* CGLYGameDlg::GetNode(int col, int row)
