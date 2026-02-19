@@ -15,7 +15,7 @@
 #include "Astar.h"
 #import "msxml4.dll"
 using namespace MSXML2;
-#endif // _MSC_VER > 1000
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +27,9 @@ class CGLYGameDlg : public CDialog, public ISearchable
 public:
 	CGLYGameDlg(CWnd* pParent = NULL);	// standard constructor
 	virtual ~CGLYGameDlg();
-	// Dialog Data
-		//{{AFX_DATA(CGLYGameDlg)
 	enum { IDD = IDD_GLYGAME_DIALOG };
-	//}}AFX_DATA
-
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CGLYGameDlg)
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
 public:
 	//创建背景。
 	void CreateBackGroud();
@@ -144,19 +135,17 @@ public:
 	//地图的所有内容。
 	CDC mMapDC;
 	CBitmap mBackMap;
+	CBitmap mMap;
 	float mMapX;
 	float mMapY;
 protected:
 	HICON mIcon;
 public:
-	// Generated message map functions
-	//{{AFX_MSG(CGLYGameDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 
-#endif // !defined(AFX_GLYGAMEDLG_H__C2D68685_30D8_4E6D_B7A3_49B9DDEB3446__INCLUDED_)
+#endif

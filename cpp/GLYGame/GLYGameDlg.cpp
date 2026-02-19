@@ -202,12 +202,13 @@ void CGLYGameDlg::RenderAll()
 	int bWidth = mBack->GetWidth();
 	int bHeight = mBack->GetHeight();
 
-	CBitmap cMap;// 创建兼容位图
-	cMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
-	mMapDC.SelectObject(&cMap);// 兼容DC选入赚容位图
+	if (mMap.GetSafeHandle() == NULL)
+	{
+		mMap.CreateCompatibleBitmap(hdc, bWidth, bHeight);
+		mMapDC.SelectObject(&mMap);// 兼容DC选入赚容位图
+	}
 
 	Graphics graphics(mMapDC.GetSafeHdc());
-
 	graphics.DrawImage(mBack, 0, 0, bWidth, bHeight);
 	graphics.ReleaseHDC(mMapDC.GetSafeHdc());
 
@@ -262,7 +263,6 @@ void CGLYGameDlg::RenderAll()
 		mAvatar.CalculatePosition();
 	}
 }
-
 
 /**
  * 解析所有素材定义数据并创建与之对应ItemDefination。
