@@ -1,0 +1,2 @@
+GLYGame has been moved to "https://github.com/GuoliangYang1985/avatar".
+GLYGame转移到了“https://github.com/GuoliangYang1985/avatar”。
